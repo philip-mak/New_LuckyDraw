@@ -7,65 +7,38 @@
         <span class="text-sm font-medium text-gray-600 hidden sm:inline">抽獎場次:</span>
       </div>
 
-      <!-- Session Swiper (Mobile) -->
-      <div 
-        class="swipe-container relative flex-1 min-w-[200px] max-w-[400px] overflow-hidden"
-        @touchstart="handleTouchStart"
-        @touchmove="handleTouchMove"
-        @touchend="handleTouchEnd"
-      >
-        <div 
-          class="swipe-track flex transition-transform duration-300 ease-out"
-          :style="{ transform: `translateX(${swipeOffset}px)` }"
+      <!-- Session Selector -->
+      <div class="relative flex-1 min-w-[200px] max-w-[400px]">
+        <select
+          v-model="selectedSessionId"
+          @change="handleSessionChange"
+          class="w-full px-4 py-2.5 pr-10 text-sm font-medium border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer appearance-none bg-white"
+          :style="{ 
+            borderColor: activeSessionColor,
+            backgroundColor: `${activeSessionColor}15`
+          }"
         >
-          <div
-            v-for="session in sessionsList"
-            :key="session.id"
-            class="swipe-item flex-shrink-0 w-full px-1"
-            @click="selectSession(session.id)"
-          >
-            <div
-              class="session-card p-3 rounded-lg border-2 cursor-pointer transition-all"
-              :class="{ 'ring-2 ring-offset-2': session.id === selectedSessionId }"
-              :style="{ 
-                borderColor: session.id === selectedSessionId ? session.color : '#e5e7eb',
-                backgroundColor: session.id === selectedSessionId ? `${session.color}10` : 'white',
-                '--ring-color': session.color
-              }"
-            >
-              <div class="flex items-center justify-between mb-1">
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: session.color }"></div>
-                  <span class="font-medium text-sm truncate">{{ session.name }}</span>
-                </div>
-                <span class="text-xs text-gray-500">
-                  {{ session.winnersCount }}/{{ session.prizesCount }}
-                </span>
-              </div>
-              
-              <!-- Progress Bar -->
-              <div class="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  class="h-full transition-all duration-300"
-                  :style="{ 
-                    width: `${session.progress}%`,
-                    backgroundColor: session.color 
-                  }"
-                ></div>
-              </div>
-            </div>
-          </div>
+          <option v-for="session in sessionsList" :key="session.id" :value="session.id">
+            {{ session.name }} ({{ session.winnersCount }}/{{ session.prizesCount }})
+          </option>
+        </select>
+        
+        <!-- Custom Dropdown Arrow -->
+        <div class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+          <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </div>
         
-        <!-- Swipe Indicators -->
-        <div class="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex gap-1">
-          <div
-            v-for="(session, index) in sessionsList"
-            :key="session.id"
-            class="w-1.5 h-1.5 rounded-full transition-all"
-            :class="index === currentSwipeIndex ? 'bg-blue-500 w-4' : 'bg-gray-300'"
-          ></div>
-        </div>
+        <!-- Progress Indicator -->
+        <div 
+          v-if="activeSessionProgress > 0"
+          class="absolute bottom-0 left-0 h-1 rounded-b transition-all"
+          :style="{ 
+            width: `${activeSessionProgress}%`,
+            backgroundColor: activeSessionColor
+          }"
+        ></div>
       </div>
 
       <!-- Action Buttons -->
@@ -176,6 +149,15 @@ const colorOptions = [
 
 const sessionsList = computed(() => sessionsStore.sessionsList)
 
+const activeSessionColor = computed(() => {
+  return sessionsStore.activeSession?.color || '#3b82f6'
+})
+
+const activeSessionProgress = computed(() => {
+  const session = sessionsList.value.find(s => s.id === selectedSessionId.value)
+  return session?.progress || 0
+})
+
 // Update swipe index when active session changes
 watch(() => sessionsStore.activeSessionId, (newId) => {
   selectedSessionId.value = newId
@@ -185,6 +167,12 @@ watch(() => sessionsStore.activeSessionId, (newId) => {
     updateSwipePosition()
   }
 })
+
+const handleSessionChange = () => {
+  if (selectedSessionId.value) {
+    sessionsStore.setActiveSession(selectedSessionId.value)
+  }
+}
 
 const selectSession = (sessionId: string) => {
   selectedSessionId.value = sessionId
