@@ -134,7 +134,7 @@
       </div>
 
       <!-- Winner Announcement - Single Winner -->
-      <div v-if="currentWinners.length === 1" class="card p-8 mb-8 text-center bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
+      <div v-if="currentWinners.length === 1" class="card p-8 mb-8 text-center bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 relative z-30">
         <div class="text-6xl mb-4">🎉</div>
         <h3 class="text-3xl font-bold text-gray-900 mb-4">恭喜！</h3>
         
@@ -154,7 +154,7 @@
       </div>
 
       <!-- Winner Announcement - Multiple Winners -->
-      <div v-else-if="currentWinners.length > 1" class="card p-8 mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
+      <div v-else-if="currentWinners.length > 1" class="card p-8 mb-8 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200 relative z-30">
         <div class="text-center">
           <div class="text-6xl mb-4">🎉</div>
           <h3 class="text-3xl font-bold text-gray-900 mb-6">恭喜所有獲獎者！</h3>

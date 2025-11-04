@@ -43,6 +43,19 @@
 
       <!-- Action Buttons -->
       <div class="flex gap-2">
+        <!-- Delete Session Button -->
+        <button
+          @click="showDeleteConfirm = true"
+          class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+          title="刪除場次"
+          :disabled="sessionsList.length <= 1"
+          :class="{ 'opacity-50 cursor-not-allowed': sessionsList.length <= 1 }"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+        
         <!-- New Session Button -->
         <button
           @click="showNewSessionModal = true"
@@ -112,6 +125,48 @@
         </div>
       </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div
+      v-if="showDeleteConfirm"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click.self="showDeleteConfirm = false"
+    >
+      <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+        <div class="flex items-start gap-4">
+          <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          
+          <div class="flex-1">
+            <h3 class="text-lg font-bold text-gray-900 mb-2">確認刪除場次</h3>
+            <p class="text-sm text-gray-600 mb-1">
+              您確定要刪除場次 <span class="font-semibold">{{ sessionsStore.activeSession?.name }}</span> 嗎？
+            </p>
+            <p class="text-sm text-red-600 font-medium">
+              此操作將永久刪除所有參與者、獎品和獲獎記錄，且無法復原！
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-6">
+          <button
+            @click="confirmDeleteSession"
+            class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          >
+            確認刪除
+          </button>
+          <button
+            @click="showDeleteConfirm = false"
+            class="flex-1 btn-secondary"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -123,6 +178,7 @@ const sessionsStore = useSessionsStore()
 
 const selectedSessionId = ref(sessionsStore.activeSessionId)
 const showNewSessionModal = ref(false)
+const showDeleteConfirm = ref(false)
 const newSessionName = ref('')
 const newSessionColor = ref('#3b82f6')
 
@@ -230,6 +286,13 @@ const createNewSession = () => {
     newSessionName.value = ''
     newSessionColor.value = '#3b82f6'
     showNewSessionModal.value = false
+  }
+}
+
+const confirmDeleteSession = () => {
+  if (sessionsStore.activeSessionId && sessionsList.value.length > 1) {
+    sessionsStore.deleteSession(sessionsStore.activeSessionId)
+    showDeleteConfirm.value = false
   }
 }
 </script>
