@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainbow Animation Test - Winner Cards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: linear-gradient(135deg, #fef2f2 0%, #f0fdf4 50%, #fef2f2 100%);
+            min-height: 100vh;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .participant-card {
+            padding: 1.5rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+            position: relative;
+            overflow: visible;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+            text-align: center;
+        }
+        
+        /* WINNER CARD - Rainbow Animation */
+        .participant-card.winner {
+            animation: colorCycle 2s linear infinite, winnerPulse 1.5s ease-in-out infinite !important;
+            transform: scale(1.08) !important;
+            z-index: 100 !important;
+            border-width: 4px !important;
+            border-style: solid !important;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.2) !important;
+            filter: brightness(1.2) !important;
+            position: relative !important;
+            overflow: visible !important;
+            transition: none !important;
+        }
+        
+        /* Ensure text is visible */
+        .participant-card.winner * {
+            color: white !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), -1px -1px 2px rgba(0, 0, 0, 0.6) !important;
+            position: relative !important;
+            z-index: 1 !important;
+        }
+        
+        .participant-card.winner .badge {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #166534 !important;
+            text-shadow: none !important;
+            font-weight: bold !important;
+        }
+        
+        /* Rainbow Color Cycle Animation */
+        @keyframes colorCycle {
+            0% {
+                background-color: #ff0000; /* Red */
+                border-color: #ff0000;
+            }
+            17% {
+                background-color: #ff7700; /* Orange */
+                border-color: #ff7700;
+            }
+            33% {
+                background-color: #ffff00; /* Yellow */
+                border-color: #ffff00;
+            }
+            50% {
+                background-color: #00ff00; /* Green */
+                border-color: #00ff00;
+            }
+            67% {
+                background-color: #0080ff; /* Blue */
+                border-color: #0080ff;
+            }
+            83% {
+                background-color: #ff00ff; /* Magenta */
+                border-color: #ff00ff;
+            }
+            100% {
+                background-color: #ff0000; /* Back to Red */
+                border-color: #ff0000;
+            }
+        }
+        
+        /* Winner Pulse Animation */
+        @keyframes winnerPulse {
+            0%, 100% {
+                transform: scale(1.08);
+            }
+            50% {
+                transform: scale(1.12);
+            }
+        }
+        
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+        }
+        
+        .avatar-text {
+            color: white;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        
+        .name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        
+        .position {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .note {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .note h3 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .note p {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌈 Rainbow Winner Animation Test</h1>
+    <p class="subtitle">All cards below are marked as winners and should show continuous rainbow color cycling</p>
+    
+    <div class="container">
+        <div class="participant-card winner">
+            <div class="avatar">
+                <span class="avatar-text">張</span>
+            </div>
+            <div class="name">張三</div>
+            <div class="position">產品經理</div>
+            <div class="badge">🏆 獲獎者</div>
+        </div>
+        
+        <div class="participant-card winner">
+            <div class="avatar">
+                <span class="avatar-text">李</span>
+            </div>
+            <div class="name">李四</div>
+            <div class="position">前端工程師</div>
+            <div class="badge">🏆 獲獎者</div>
+        </div>
+        
+        <div class="participant-card winner">
+            <div class="avatar">
+                <span class="avatar-text">王</span>
+            </div>
+            <div class="name">王五</div>
+            <div class="position">設計師</div>
+            <div class="badge">🏆 獲獎者</div>
+        </div>
+        
+        <div class="participant-card winner">
+            <div class="avatar">
+                <span class="avatar-text">趙</span>
+            </div>
+            <div class="name">趙六</div>
+            <div class="position">行銷專員</div>
+            <div class="badge">🏆 獲獎者</div>
+        </div>
+        
+        <div class="participant-card winner">
+            <div class="avatar">
+                <span class="avatar-text">錢</span>
+            </div>
+            <div class="name">錢七</div>
+            <div class="position">業務代表</div>
+            <div class="badge">🏆 獲獎者</div>
+        </div>
+    </div>
+    
+    <div class="note">
+        <h3>✅ What You Should See:</h3>
+        <p>
+            Each card should be continuously cycling through rainbow colors:<br>
+            <strong>Red → Orange → Yellow → Green → Blue → Magenta → Red</strong><br><br>
+            The animation completes a full cycle every 2 seconds.<br>
+            Cards should also pulse slightly (scale from 1.08x to 1.12x) every 1.5 seconds.<br><br>
+            All text should be white with black shadow for visibility.<br>
+            The winner badge should have a white background.
+        </p>
+    </div>
+    
+    <script>
+        console.log('🌈 Rainbow Animation Test loaded');
+        console.log('✅ All cards have class "winner" applied');
+        console.log('🎨 Animation should be clearly visible');
+        
+        // Verify animation is working
+        setTimeout(() => {
+            const cards = document.querySelectorAll('.participant-card.winner');
+            console.log(`Found ${cards.length} winner cards`);
+            cards.forEach((card, index) => {
+                const computedStyle = window.getComputedStyle(card);
+                console.log(`Card ${index + 1} animation:`, computedStyle.animation);
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -50,9 +50,10 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue'
 import type { Participant } from '@/types'
 
-defineProps<{
+const props = defineProps<{
   participant: Participant
   isSelected?: boolean
   isDrawing?: boolean
@@ -61,6 +62,13 @@ defineProps<{
 defineEmits<{
   click: []
 }>()
+
+// Debug: Log when participant becomes a winner
+watch(() => props.participant.isWinner, (isWinner) => {
+  if (isWinner) {
+    console.log(`🏆 ${props.participant.name} is now a WINNER! Rainbow animation should be visible.`)
+  }
+})
 </script>
 
 <style scoped>
@@ -128,6 +136,8 @@ defineEmits<{
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.2) !important;
   filter: brightness(1.2) !important;
   position: relative !important;
+  overflow: visible !important;
+  transition: none !important;
 }
 
 /* Ensure text is visible on winner cards with rainbow background */
@@ -160,28 +170,32 @@ defineEmits<{
 /* 超簡單彩色循環 - 純色背景 */
 @keyframes colorCycle {
   0% {
-    background-color: #ff0000 !important; /* 純紅色 */
-    border-color: #ff0000 !important;
+    background-color: #ff0000; /* 純紅色 */
+    border-color: #ff0000;
   }
-  20% {
-    background-color: #ffff00 !important; /* 純黃色 */
-    border-color: #ffff00 !important;
+  17% {
+    background-color: #ff7700; /* 橙色 */
+    border-color: #ff7700;
   }
-  40% {
-    background-color: #0080ff !important; /* 純藍色 */
-    border-color: #0080ff !important;
+  33% {
+    background-color: #ffff00; /* 純黃色 */
+    border-color: #ffff00;
   }
-  60% {
-    background-color: #00ff00 !important; /* 純綠色 */
-    border-color: #00ff00 !important;
+  50% {
+    background-color: #00ff00; /* 純綠色 */
+    border-color: #00ff00;
   }
-  80% {
-    background-color: #ff00ff !important; /* 純洋紅 */
-    border-color: #ff00ff !important;
+  67% {
+    background-color: #0080ff; /* 純藍色 */
+    border-color: #0080ff;
+  }
+  83% {
+    background-color: #ff00ff; /* 純洋紅 */
+    border-color: #ff00ff;
   }
   100% {
-    background-color: #ff0000 !important; /* 回到紅色 */
-    border-color: #ff0000 !important;
+    background-color: #ff0000; /* 回到紅色 */
+    border-color: #ff0000;
   }
 }
 
