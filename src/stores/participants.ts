@@ -1,10 +1,36 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Participant } from '@/types'
+
+const STORAGE_KEY = 'lucky-draw-participants'
 
 export const useParticipantsStore = defineStore('participants', () => {
   const participants = ref<Participant[]>([])
   const selectedParticipant = ref<Participant | null>(null)
+
+  // Load from localStorage on init
+  const loadFromStorage = () => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored) {
+        participants.value = JSON.parse(stored)
+      }
+    } catch (error) {
+      console.error('Failed to load participants from localStorage:', error)
+    }
+  }
+
+  // Save to localStorage whenever participants change
+  watch(participants, (newValue) => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newValue))
+    } catch (error) {
+      console.error('Failed to save participants to localStorage:', error)
+    }
+  }, { deep: true })
+
+  // Initialize from storage
+  loadFromStorage()
 
   const activeParticipants = computed(() =>
     participants.value.filter(p => !p.isWinner)

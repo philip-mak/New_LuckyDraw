@@ -62,6 +62,68 @@
         <p class="text-sm text-gray-600 mt-2">快速載入15位參與者和6種聖誕禮物開始測試</p>
       </div>
 
+      <!-- Data Management Section -->
+      <div class="card p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+          </svg>
+          數據管理
+        </h3>
+        <p class="text-sm text-gray-600 mb-4">
+          匯出當前狀態以便日後恢復，或匯入之前儲存的抽獎進度。資料會自動儲存到瀏覽器。
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <!-- Export Complete State -->
+          <button 
+            @click="exportCompleteState"
+            class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            :disabled="totalParticipants === 0 && totalPrizes === 0"
+            :class="{ 'opacity-50 cursor-not-allowed': totalParticipants === 0 && totalPrizes === 0 }"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            匯出完整狀態
+          </button>
+
+          <!-- Import State -->
+          <label class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors cursor-pointer">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            匯入狀態
+            <input 
+              type="file" 
+              accept=".json" 
+              @change="importCompleteState"
+              class="hidden"
+            />
+          </label>
+
+          <!-- Clear All Data -->
+          <button 
+            @click="confirmClearAll"
+            class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            :disabled="totalParticipants === 0 && totalPrizes === 0 && winners.length === 0"
+            :class="{ 'opacity-50 cursor-not-allowed': totalParticipants === 0 && totalPrizes === 0 && winners.length === 0 }"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+            清除所有資料
+          </button>
+
+          <!-- Auto-save Status -->
+          <div class="flex items-center text-sm text-gray-600 ml-auto">
+            <svg class="w-4 h-4 mr-1 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            自動儲存已啟用
+          </div>
+        </div>
+      </div>
+
       <!-- Action Cards -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Add Participants -->
@@ -222,5 +284,99 @@ const loadSampleData = () => {
   })
   
   alert('✅ 已載入聖誕派對範例數據！\n👥 15位參與者\n🎁 6種聖誕禮物')
+}
+
+// Export complete application state
+const exportCompleteState = () => {
+  const state = {
+    exportDate: new Date().toISOString(),
+    version: '1.0',
+    participants: participantsStore.$state.participants,
+    prizes: prizesStore.$state.prizes,
+    settings: {
+      // Add any settings if needed
+    }
+  }
+
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `lucky-draw-state-${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+
+  alert('✅ 完整狀態已匯出！\n📁 檔案包含所有參與者、獎品和獲獎記錄')
+}
+
+// Import complete application state
+const importCompleteState = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    try {
+      const state = JSON.parse(e.target?.result as string)
+      
+      // Validate the imported data
+      if (!state.participants || !state.prizes) {
+        throw new Error('無效的檔案格式')
+      }
+
+      // Confirm before importing
+      const participantCount = state.participants.length
+      const prizeCount = state.prizes.length
+      const winnersCount = state.participants.filter((p: any) => p.isWinner).length
+
+      const confirmed = confirm(
+        `即將匯入以下資料:\n\n` +
+        `👥 參與者: ${participantCount} 人\n` +
+        `🎁 獎品: ${prizeCount} 項\n` +
+        `🏆 獲獎者: ${winnersCount} 人\n\n` +
+        `⚠️ 此操作將覆蓋當前所有資料！\n是否繼續？`
+      )
+
+      if (confirmed) {
+        // Clear existing data
+        participantsStore.$state.participants = []
+        prizesStore.$state.prizes = []
+
+        // Import new data
+        participantsStore.$state.participants = state.participants
+        prizesStore.$state.prizes = state.prizes
+
+        alert('✅ 資料已成功匯入！\n所有狀態已恢復')
+      }
+    } catch (error) {
+      alert('❌ 匯入失敗！\n請確認檔案格式正確')
+      console.error('Import error:', error)
+    }
+  }
+  
+  reader.readAsText(file)
+  input.value = '' // Reset input
+}
+
+// Confirm and clear all data
+const confirmClearAll = () => {
+  const confirmed = confirm(
+    '⚠️ 確定要清除所有資料嗎？\n\n' +
+    '這將刪除:\n' +
+    `👥 ${totalParticipants} 位參與者\n` +
+    `🎁 ${totalPrizes} 個獎品\n` +
+    `🏆 ${winners.length} 位獲獎者\n\n` +
+    '💡 建議先匯出資料備份！\n此操作無法復原。'
+  )
+
+  if (confirmed) {
+    participantsStore.$state.participants = []
+    prizesStore.$state.prizes = []
+    alert('✅ 所有資料已清除！')
+  }
 }
 </script>

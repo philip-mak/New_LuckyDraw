@@ -101,9 +101,15 @@
       <div v-if="currentWinners.length === 1" class="card p-8 mb-8 text-center bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-200">
         <div class="text-6xl mb-4">🎉</div>
         <h3 class="text-3xl font-bold text-gray-900 mb-4">恭喜！</h3>
-        <div class="text-xl text-gray-700 mb-2">{{ currentWinners[0].name }}</div>
-        <div v-if="currentWinners[0].position" class="text-lg text-gray-600 mb-4">{{ currentWinners[0].position }}</div>
-        <div class="text-lg font-semibold text-purple-600">獲獎: {{ currentWinners[0].prizeWon }}</div>
+        
+        <!-- Use ParticipantCard with rainbow animation -->
+        <div class="flex justify-center mb-6">
+          <div class="w-64">
+            <ParticipantCard :participant="currentWinners[0]" />
+          </div>
+        </div>
+        
+        <div class="text-lg font-semibold text-purple-600 mb-4">獲獎: {{ currentWinners[0].prizeWon }}</div>
         
         <div class="mt-6 flex justify-center gap-4">
           <button @click="confirmWinners" class="btn-primary">確認獲獎者</button>
@@ -118,17 +124,13 @@
           <h3 class="text-3xl font-bold text-gray-900 mb-6">恭喜所有獲獎者！</h3>
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <div 
-            v-for="(winner, index) in currentWinners" 
+        <!-- Use ParticipantCard with rainbow animation -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+          <ParticipantCard
+            v-for="winner in currentWinners"
             :key="winner.id"
-            class="bg-white p-4 rounded-lg border border-yellow-300 text-center"
-          >
-            <div class="text-2xl mb-2">🏆</div>
-            <div class="font-bold text-lg text-gray-900">{{ winner.name }}</div>
-            <div v-if="winner.position" class="text-sm text-gray-600">{{ winner.position }}</div>
-            <div class="text-purple-600 font-medium mt-2">{{ winner.prizeWon }}</div>
-          </div>
+            :participant="winner"
+          />
         </div>
         
         <div class="flex justify-center gap-4">
@@ -282,7 +284,8 @@ const finalizeDraw = () => {
     if (currentPrize.value) {
       newWinners.push({
         ...winner,
-        prizeWon: currentPrize.value.title
+        prizeWon: currentPrize.value.title,
+        isWinner: true  // Set isWinner to true for rainbow animation
       })
     }
   }

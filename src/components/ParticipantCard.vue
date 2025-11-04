@@ -99,12 +99,6 @@ watch(() => props.participant.isWinner, (isWinner) => {
   border-color: #3b82f6 !important;
 }
 
-.participant-card.winner {
-  background: linear-gradient(135deg, #dcfce7, #16a34a) !important;
-  border-color: #16a34a !important;
-  transform: scale(1.05) !important;
-}
-
 .participant-card.drawing-mode {
   cursor: pointer;
   transition: all 0.2s ease-in-out;
@@ -128,13 +122,13 @@ watch(() => props.participant.isWinner, (isWinner) => {
 
 .participant-card.winner {
   /* Show rainbow animation for winners */
-  animation: colorCycle 2s linear infinite, winnerPulse 1.5s ease-in-out infinite !important;
+  animation: colorCycle 3s ease-in-out infinite, winnerPulse 2s ease-in-out infinite !important;
   transform: scale(1.08) !important;
   z-index: 100 !important;
-  border-width: 4px !important;
+  border-width: 3px !important;
   border-style: solid !important;
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.2) !important;
-  filter: brightness(1.2) !important;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4), 0 8px 30px rgba(0, 0, 0, 0.15) !important;
+  filter: brightness(1.05) !important;
   position: relative !important;
   overflow: visible !important;
   transition: none !important;
@@ -142,9 +136,9 @@ watch(() => props.participant.isWinner, (isWinner) => {
 
 /* Ensure text is visible on winner cards with rainbow background */
 .participant-card.winner * {
-  color: white !important;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 
-               -1px -1px 2px rgba(0, 0, 0, 0.6) !important;
+  color: #1f2937 !important;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8), 
+               0px 0px 8px rgba(255, 255, 255, 0.6) !important;
   position: relative !important;
   z-index: 1 !important;
 }
@@ -170,32 +164,32 @@ watch(() => props.participant.isWinner, (isWinner) => {
 /* 超簡單彩色循環 - 純色背景 */
 @keyframes colorCycle {
   0% {
-    background-color: #ff0000; /* 純紅色 */
-    border-color: #ff0000;
+    background: linear-gradient(135deg, #ffd6d6, #ffb3b3); /* 柔和粉紅 */
+    border-color: #ffb3b3;
   }
   17% {
-    background-color: #ff7700; /* 橙色 */
-    border-color: #ff7700;
+    background: linear-gradient(135deg, #ffe4d6, #ffc9a8); /* 柔和橙色 */
+    border-color: #ffc9a8;
   }
   33% {
-    background-color: #ffff00; /* 純黃色 */
-    border-color: #ffff00;
+    background: linear-gradient(135deg, #fff9d6, #fff2a8); /* 柔和黃色 */
+    border-color: #fff2a8;
   }
   50% {
-    background-color: #00ff00; /* 純綠色 */
-    border-color: #00ff00;
+    background: linear-gradient(135deg, #d6f5e6, #b3ebc8); /* 柔和綠色 */
+    border-color: #b3ebc8;
   }
   67% {
-    background-color: #0080ff; /* 純藍色 */
-    border-color: #0080ff;
+    background: linear-gradient(135deg, #d6e9ff, #a8d4ff); /* 柔和藍色 */
+    border-color: #a8d4ff;
   }
   83% {
-    background-color: #ff00ff; /* 純洋紅 */
-    border-color: #ff00ff;
+    background: linear-gradient(135deg, #f0d6ff, #e0b3ff); /* 柔和紫色 */
+    border-color: #e0b3ff;
   }
   100% {
-    background-color: #ff0000; /* 回到紅色 */
-    border-color: #ff0000;
+    background: linear-gradient(135deg, #ffd6d6, #ffb3b3); /* 回到柔和粉紅 */
+    border-color: #ffb3b3;
   }
 }
 
