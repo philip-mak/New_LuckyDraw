@@ -100,21 +100,36 @@
         </div>
       </div>
 
-      <!-- Current Prize -->
-      <div v-if="currentPrize" class="card p-6 mb-8 text-center">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">當前獎品</h3>
-        <div class="text-2xl font-bold text-purple-600 mb-2">{{ currentPrize.title }}</div>
-        <p class="text-gray-600">{{ currentPrize.description }}</p>
-        <div class="flex justify-center gap-4 mt-4">
-          <div class="text-sm text-gray-500">
-            剩餘獎品: {{ currentPrize.remainingQuantity }} / {{ currentPrize.quantity }}
-          </div>
-          <div class="text-sm text-blue-600">
-            本次抽取: {{ Math.min(winnersToSelect, currentPrize.remainingQuantity) }} 名
+      <!-- Available Prizes Queue -->
+      <div v-if="availablePrizes.length > 0" class="card p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">📋 待抽獎品清單（按優先順序）</h3>
+        <div class="space-y-3">
+          <div 
+            v-for="(prize, index) in availablePrizes.slice(0, 5)" 
+            :key="prize.id"
+            class="flex items-center justify-between p-4 rounded-lg border-2 transition-all"
+            :class="index === 0 ? 'bg-purple-50 border-purple-300' : 'bg-gray-50 border-gray-200'"
+          >
+            <div class="flex items-center gap-3">
+              <div 
+                class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                :class="index === 0 ? 'bg-purple-600' : 'bg-gray-400'"
+              >
+                {{ index + 1 }}
+              </div>
+              <div>
+                <div class="font-semibold text-gray-900">{{ prize.title }}</div>
+                <div class="text-sm text-gray-600">{{ prize.description }}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-purple-600">{{ prize.remainingQuantity }}</div>
+              <div class="text-xs text-gray-500">剩餘數量</div>
+            </div>
           </div>
         </div>
-        <div v-if="winnersToSelect > currentPrize.remainingQuantity" class="text-sm text-orange-600 mt-2">
-          ⚠️ 抽取人數超過剩餘獎品數量，將調整為 {{ currentPrize.remainingQuantity }} 名
+        <div v-if="availablePrizes.length > 5" class="text-center text-sm text-gray-500 mt-3">
+          還有 {{ availablePrizes.length - 5 }} 項獎品...
         </div>
       </div>
 
@@ -212,6 +227,11 @@ const {
   winners, 
   selectedParticipant
 } = storeToRefs(participantsStore)
+
+// Available prizes sorted by order
+const availablePrizes = computed(() => {
+  return prizesStore.availablePrizes
+})
 
 // Get methods directly from store (these don't need refs)
 const {
