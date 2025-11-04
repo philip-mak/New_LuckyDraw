@@ -1,35 +1,15 @@
 import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import type { Prize } from '@/types'
-
-const STORAGE_KEY = 'lucky-draw-prizes'
+import { useSessionsStore } from './sessions'
 
 export const usePrizesStore = defineStore('prizes', () => {
-  const prizes = ref<Prize[]>([])
+  const sessionsStore = useSessionsStore()
 
-  // Load from localStorage on init
-  const loadFromStorage = () => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        prizes.value = JSON.parse(stored)
-      }
-    } catch (error) {
-      console.error('Failed to load prizes from localStorage:', error)
-    }
-  }
-
-  // Save to localStorage whenever prizes change
-  watch(prizes, (newValue) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newValue))
-    } catch (error) {
-      console.error('Failed to save prizes to localStorage:', error)
-    }
-  }, { deep: true })
-
-  // Initialize from storage
-  loadFromStorage()
+  // Get prizes from active session
+  const prizes = computed(() => {
+    return sessionsStore.activeSession?.prizes || []
+  })
 
   const availablePrizes = computed(() =>
     prizes.value.filter(p => p.remainingQuantity > 0)
@@ -38,29 +18,45 @@ export const usePrizesStore = defineStore('prizes', () => {
   const totalPrizes = computed(() => prizes.value.length)
 
   const addPrize = (prize: Omit<Prize, 'id'>) => {
+    if (!sessionsStore.activeSession) return
+    
     const newPrize: Prize = {
       ...prize,
       id: crypto.randomUUID(),
       remainingQuantity: prize.remainingQuantity || prize.quantity
     }
-    prizes.value.push(newPrize)
+    
+    const updated = [...prizes.value, newPrize]
+    sessionsStore.updateSessionData({ prizes: updated })
   }
 
   const addPrizes = (prizeList: Omit<Prize, 'id'>[]) => {
-    prizeList.forEach(prize => addPrize(prize))
+    if (!sessionsStore.activeSession) return
+    
+    const newPrizes = prizeList.map(p => ({
+      ...p,
+      id: crypto.randomUUID(),
+      remainingQuantity: p.remainingQuantity || p.quantity
+    }))
+    
+    const updated = [...prizes.value, ...newPrizes]
+    sessionsStore.updateSessionData({ prizes: updated })
   }
 
   const removePrize = (id: string) => {
-    const index = prizes.value.findIndex(p => p.id === id)
-    if (index > -1) {
-      prizes.value.splice(index, 1)
-    }
+    if (!sessionsStore.activeSession) return
+    
+    const updated = prizes.value.filter(p => p.id !== id)
+    sessionsStore.updateSessionData({ prizes: updated })
   }
 
   const updatePrize = (id: string, updates: Partial<Prize>) => {
-    const prize = prizes.value.find(p => p.id === id)
-    if (prize) {
-      const updatedPrize = { ...prize, ...updates }
+    if (!sessionsStore.activeSession) return
+    
+    const updated = prizes.value.map(p => {
+      if (p.id !== id) return p
+      
+      const updatedPrize = { ...p, ...updates }
       
       // Ensure remaining quantity doesn't exceed total quantity
       if (updates.quantity !== undefined) {
@@ -70,28 +66,41 @@ export const usePrizesStore = defineStore('prizes', () => {
         )
       }
       
-      const index = prizes.value.findIndex(p => p.id === id)
-      prizes.value[index] = updatedPrize
-    }
+      return updatedPrize
+    })
+    
+    sessionsStore.updateSessionData({ prizes: updated })
   }
 
   const consumePrize = (id: string) => {
+    if (!sessionsStore.activeSession) return false
+    
     const prize = prizes.value.find(p => p.id === id)
-    if (prize && prize.remainingQuantity > 0) {
-      prize.remainingQuantity -= 1
-      return true
-    }
-    return false
+    if (!prize || prize.remainingQuantity <= 0) return false
+    
+    const updated = prizes.value.map(p =>
+      p.id === id ? { ...p, remainingQuantity: p.remainingQuantity - 1 } : p
+    )
+    
+    sessionsStore.updateSessionData({ prizes: updated })
+    return true
   }
 
   const resetAllPrizes = () => {
-    prizes.value.forEach(prize => {
-      prize.remainingQuantity = prize.quantity
-    })
+    if (!sessionsStore.activeSession) return
+    
+    const updated = prizes.value.map(p => ({
+      ...p,
+      remainingQuantity: p.quantity
+    }))
+    
+    sessionsStore.updateSessionData({ prizes: updated })
   }
 
   const clearAllPrizes = () => {
-    prizes.value = []
+    if (!sessionsStore.activeSession) return
+    
+    sessionsStore.updateSessionData({ prizes: [] })
   }
 
   const getNextAvailablePrize = (): Prize | null => {

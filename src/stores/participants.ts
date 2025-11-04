@@ -1,36 +1,25 @@
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import type { Participant } from '@/types'
-
-const STORAGE_KEY = 'lucky-draw-participants'
+import { useSessionsStore } from './sessions'
 
 export const useParticipantsStore = defineStore('participants', () => {
-  const participants = ref<Participant[]>([])
+  const sessionsStore = useSessionsStore()
   const selectedParticipant = ref<Participant | null>(null)
 
-  // Load from localStorage on init
-  const loadFromStorage = () => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        participants.value = JSON.parse(stored)
-      }
-    } catch (error) {
-      console.error('Failed to load participants from localStorage:', error)
+  // Get participants from active session
+  const participants = computed(() => {
+    return sessionsStore.activeSession?.participants || []
+  })
+
+  // Sync changes back to session
+  const syncToSession = () => {
+    if (sessionsStore.activeSession) {
+      sessionsStore.updateSessionData({
+        participants: participants.value
+      })
     }
   }
-
-  // Save to localStorage whenever participants change
-  watch(participants, (newValue) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newValue))
-    } catch (error) {
-      console.error('Failed to save participants to localStorage:', error)
-    }
-  }, { deep: true })
-
-  // Initialize from storage
-  loadFromStorage()
 
   const activeParticipants = computed(() =>
     participants.value.filter(p => !p.isWinner)
@@ -43,71 +32,109 @@ export const useParticipantsStore = defineStore('participants', () => {
   const totalParticipants = computed(() => participants.value.length)
 
   const addParticipant = (participant: Omit<Participant, 'id'>) => {
+    if (!sessionsStore.activeSession) return
+    
     const newParticipant: Participant = {
       ...participant,
       id: crypto.randomUUID(),
       isSelected: false,
       isWinner: false
     }
-    participants.value.push(newParticipant)
+    
+    const updated = [...participants.value, newParticipant]
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const addParticipants = (participantList: Omit<Participant, 'id'>[]) => {
-    participantList.forEach(participant => addParticipant(participant))
+    if (!sessionsStore.activeSession) return
+    
+    const newParticipants = participantList.map(p => ({
+      ...p,
+      id: crypto.randomUUID(),
+      isSelected: false,
+      isWinner: false
+    }))
+    
+    const updated = [...participants.value, ...newParticipants]
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const removeParticipant = (id: string) => {
-    const index = participants.value.findIndex(p => p.id === id)
-    if (index > -1) {
-      participants.value.splice(index, 1)
-    }
+    if (!sessionsStore.activeSession) return
+    
+    const updated = participants.value.filter(p => p.id !== id)
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const updateParticipant = (id: string, updates: Partial<Participant>) => {
-    const participant = participants.value.find(p => p.id === id)
-    if (participant) {
-      Object.assign(participant, updates)
-    }
+    if (!sessionsStore.activeSession) return
+    
+    const updated = participants.value.map(p =>
+      p.id === id ? { ...p, ...updates } : p
+    )
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const selectParticipant = (id: string) => {
-    // Clear previous selection
-    participants.value.forEach(p => p.isSelected = false)
+    if (!sessionsStore.activeSession) return
     
-    // Select new participant
-    const participant = participants.value.find(p => p.id === id)
+    const updated = participants.value.map(p => ({
+      ...p,
+      isSelected: p.id === id
+    }))
+    
+    const participant = updated.find(p => p.id === id)
     if (participant) {
-      participant.isSelected = true
       selectedParticipant.value = participant
     }
+    
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const markAsWinner = (id: string, prize?: string) => {
-    const participant = participants.value.find(p => p.id === id)
-    if (participant) {
-      participant.isWinner = true
-      participant.prizeWon = prize
-      participant.drawOrder = winners.value.length
-      selectedParticipant.value = null
-    }
+    if (!sessionsStore.activeSession) return
+    
+    const currentWinners = winners.value
+    const updated = participants.value.map(p =>
+      p.id === id
+        ? { ...p, isWinner: true, prizeWon: prize, drawOrder: currentWinners.length }
+        : p
+    )
+    
+    selectedParticipant.value = null
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const clearSelection = () => {
-    participants.value.forEach(p => p.isSelected = false)
+    if (!sessionsStore.activeSession) return
+    
+    const updated = participants.value.map(p => ({
+      ...p,
+      isSelected: false
+    }))
+    
     selectedParticipant.value = null
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const resetAllWinners = () => {
-    participants.value.forEach(p => {
-      p.isWinner = false
-      p.prizeWon = undefined
-      p.drawOrder = undefined
-    })
+    if (!sessionsStore.activeSession) return
+    
+    const updated = participants.value.map(p => ({
+      ...p,
+      isWinner: false,
+      prizeWon: undefined,
+      drawOrder: undefined
+    }))
+    
+    sessionsStore.updateSessionData({ participants: updated })
   }
 
   const clearAllParticipants = () => {
-    participants.value = []
+    if (!sessionsStore.activeSession) return
+    
     selectedParticipant.value = null
+    sessionsStore.updateSessionData({ participants: [] })
   }
 
   const importFromCSV = (csvData: string) => {

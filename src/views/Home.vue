@@ -219,14 +219,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useParticipantsStore } from '@/stores/participants'
 import { usePrizesStore } from '@/stores/prizes'
+import { useSessionsStore } from '@/stores/sessions'
 import ParticipantModal from '@/components/ParticipantModal.vue'
 import PrizeModal from '@/components/PrizeModal.vue'
 
 const participantsStore = useParticipantsStore()
 const prizesStore = usePrizesStore()
+const sessionsStore = useSessionsStore()
 
 const showAddParticipant = ref(false)
 const showAddPrize = ref(false)
@@ -286,32 +288,31 @@ const loadSampleData = () => {
   alert('✅ 已載入聖誕派對範例數據！\n👥 15位參與者\n🎁 6種聖誕禮物')
 }
 
-// Export complete application state
+// Export current session
 const exportCompleteState = () => {
-  const state = {
-    exportDate: new Date().toISOString(),
-    version: '1.0',
-    participants: participantsStore.$state.participants,
-    prizes: prizesStore.$state.prizes,
-    settings: {
-      // Add any settings if needed
-    }
+  if (!sessionsStore.activeSession) {
+    alert('❌ 沒有活動場次！')
+    return
   }
 
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
+  const sessionData = sessionsStore.exportSession(sessionsStore.activeSessionId!)
+  if (!sessionData) return
+
+  const blob = new Blob([JSON.stringify(sessionData, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `lucky-draw-state-${new Date().toISOString().split('T')[0]}.json`
+  const fileName = `${sessionsStore.activeSession.name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_')}-${new Date().toISOString().split('T')[0]}.json`
+  link.download = fileName
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
 
-  alert('✅ 完整狀態已匯出！\n📁 檔案包含所有參與者、獎品和獲獎記錄')
+  alert(`✅ 場次已匯出！\n📁 場次名稱: ${sessionsStore.activeSession.name}\n👥 參與者: ${sessionData.participants.length}\n🎁 獎品: ${sessionData.prizes.length}`)
 }
 
-// Import complete application state
+// Import session from file
 const importCompleteState = (event: Event) => {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -321,36 +322,33 @@ const importCompleteState = (event: Event) => {
   const reader = new FileReader()
   reader.onload = (e) => {
     try {
-      const state = JSON.parse(e.target?.result as string)
+      const data = JSON.parse(e.target?.result as string)
       
       // Validate the imported data
-      if (!state.participants || !state.prizes) {
+      if (!data.participants || !data.prizes) {
         throw new Error('無效的檔案格式')
       }
 
-      // Confirm before importing
-      const participantCount = state.participants.length
-      const prizeCount = state.prizes.length
-      const winnersCount = state.participants.filter((p: any) => p.isWinner).length
+      const participantCount = data.participants.length
+      const prizeCount = data.prizes.length
+      const winnersCount = data.winners?.length || 0
+
+      const sessionName = data.name || prompt('請輸入新場次名稱:', '匯入的場次') || '匯入的場次'
 
       const confirmed = confirm(
-        `即將匯入以下資料:\n\n` +
+        `即將匯入為新場次:\n\n` +
+        `📝 場次名稱: ${sessionName}\n` +
         `👥 參與者: ${participantCount} 人\n` +
         `🎁 獎品: ${prizeCount} 項\n` +
         `🏆 獲獎者: ${winnersCount} 人\n\n` +
-        `⚠️ 此操作將覆蓋當前所有資料！\n是否繼續？`
+        `是否繼續？`
       )
 
       if (confirmed) {
-        // Clear existing data
-        participantsStore.$state.participants = []
-        prizesStore.$state.prizes = []
-
-        // Import new data
-        participantsStore.$state.participants = state.participants
-        prizesStore.$state.prizes = state.prizes
-
-        alert('✅ 資料已成功匯入！\n所有狀態已恢復')
+        // Import as new session
+        const randomColor = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'][Math.floor(Math.random() * 6)]
+        sessionsStore.importSession(sessionName, data, randomColor)
+        alert(`✅ 新場次已建立！\n場次名稱: ${sessionName}`)
       }
     } catch (error) {
       alert('❌ 匯入失敗！\n請確認檔案格式正確')
@@ -362,10 +360,16 @@ const importCompleteState = (event: Event) => {
   input.value = '' // Reset input
 }
 
-// Confirm and clear all data
+// Confirm and clear current session data
 const confirmClearAll = () => {
+  if (!sessionsStore.activeSession) {
+    alert('❌ 沒有活動場次！')
+    return
+  }
+
   const confirmed = confirm(
-    '⚠️ 確定要清除所有資料嗎？\n\n' +
+    `⚠️ 確定要清除當前場次的所有資料嗎？\n\n` +
+    `場次: ${sessionsStore.activeSession.name}\n\n` +
     '這將刪除:\n' +
     `👥 ${totalParticipants} 位參與者\n` +
     `🎁 ${totalPrizes} 個獎品\n` +
@@ -374,9 +378,8 @@ const confirmClearAll = () => {
   )
 
   if (confirmed) {
-    participantsStore.$state.participants = []
-    prizesStore.$state.prizes = []
-    alert('✅ 所有資料已清除！')
+    sessionsStore.clearSessionData(sessionsStore.activeSessionId!)
+    alert('✅ 當前場次資料已清除！')
   }
 }
 </script>

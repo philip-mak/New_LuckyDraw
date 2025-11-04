@@ -35,10 +35,10 @@ export const useSessionsStore = defineStore('sessions', () => {
       color: s.color,
       participantsCount: s.participants.length,
       winnersCount: s.winners.length,
-      prizesCount: s.prizes.reduce((sum, p) => sum + p.totalQuantity, 0),
+      prizesCount: s.prizes.reduce((sum, p) => sum + p.quantity, 0),
       prizesRemaining: s.prizes.reduce((sum, p) => sum + p.remainingQuantity, 0),
-      progress: s.prizes.reduce((sum, p) => sum + p.totalQuantity, 0) > 0
-        ? Math.round((s.prizes.reduce((sum, p) => sum + (p.totalQuantity - p.remainingQuantity), 0) / s.prizes.reduce((sum, p) => sum + p.totalQuantity, 0)) * 100)
+      progress: s.prizes.reduce((sum, p) => sum + p.quantity, 0) > 0
+        ? Math.round((s.prizes.reduce((sum, p) => sum + (p.quantity - p.remainingQuantity), 0) / s.prizes.reduce((sum, p) => sum + p.quantity, 0)) * 100)
         : 0
     }))
   })
@@ -174,6 +174,36 @@ export const useSessionsStore = defineStore('sessions', () => {
     return newSession
   }
 
+  const duplicateSession = (sessionId: string) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    if (!session) return null
+
+    const newSession: DrawSession = {
+      id: `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: `${session.name} (副本)`,
+      color: session.color,
+      createdAt: new Date().toISOString(),
+      lastModified: new Date().toISOString(),
+      participants: JSON.parse(JSON.stringify(session.participants)),
+      prizes: JSON.parse(JSON.stringify(session.prizes)),
+      winners: []
+    }
+    sessions.value.push(newSession)
+    saveToLocalStorage()
+    return newSession
+  }
+
+  const clearSessionData = (sessionId: string) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    if (!session) return
+
+    session.participants = []
+    session.prizes = []
+    session.winners = []
+    session.lastModified = new Date().toISOString()
+    saveToLocalStorage()
+  }
+
   // Auto-save on changes
   watch(sessions, () => {
     saveToLocalStorage()
@@ -199,6 +229,8 @@ export const useSessionsStore = defineStore('sessions', () => {
     updateSessionData,
     exportSession,
     importSession,
+    duplicateSession,
+    clearSessionData,
     saveToLocalStorage,
     loadFromLocalStorage
   }
