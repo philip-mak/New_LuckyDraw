@@ -15,6 +15,11 @@ const router = createRouter({
       component: () => import('@/views/Draw.vue')
     },
     {
+      path: '/check',
+      name: 'check',
+      component: () => import('@/views/CheckLists.vue')
+    },
+    {
       path: '/results',
       name: 'results',
       component: () => import('@/views/Results.vue')

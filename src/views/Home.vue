@@ -10,6 +10,7 @@
           </div>
           <nav class="flex space-x-4">
             <router-link to="/" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">首頁</router-link>
+            <router-link to="/check" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">檢查名單</router-link>
             <router-link to="/draw" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">抽獎</router-link>
             <router-link to="/results" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">結果</router-link>
             <router-link to="/settings" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">設定</router-link>
@@ -135,7 +136,7 @@
               <div class="font-medium text-gray-900">{{ winner.name }}</div>
               <div class="text-sm text-gray-600">{{ winner.prizeWon || '獎品' }}</div>
             </div>
-            <div class="text-sm text-green-600 font-medium">獲獎者 #{{ winner.drawOrder + 1 }}</div>
+            <div class="text-sm text-green-600 font-medium">獲獎者 #{{ (winner.drawOrder ?? 0) + 1 }}</div>
           </div>
         </div>
       </div>
