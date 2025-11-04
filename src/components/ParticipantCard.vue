@@ -127,6 +127,24 @@ defineEmits<{
   border-style: solid !important;
   box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 10px 40px rgba(0, 0, 0, 0.2) !important;
   filter: brightness(1.2) !important;
+  position: relative !important;
+}
+
+/* Ensure text is visible on winner cards with rainbow background */
+.participant-card.winner * {
+  color: white !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 
+               -1px -1px 2px rgba(0, 0, 0, 0.6) !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Winner badge specific styling */
+.participant-card.winner .bg-green-100 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #166534 !important;
+  text-shadow: none !important;
+  font-weight: bold !important;
 }
 
 /* 抽獎脈衝動畫 */

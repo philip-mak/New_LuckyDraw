@@ -36,6 +36,29 @@
         </div>
       </div>
 
+      <!-- Winners Showcase with Rainbow Animation -->
+      <div v-if="winners.length > 0" class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+        <div class="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            🏆 獲獎者展示 (Rainbow Animation)
+            <span class="ml-3 text-sm bg-white text-green-600 px-3 py-1 rounded-full">{{ winners.length }} 位</span>
+          </h2>
+        </div>
+        
+        <div class="p-6">
+          <p class="text-sm text-gray-600 mb-4">✨ 獲獎者卡片會自動顯示彩虹循環動畫效果</p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <ParticipantCard
+              v-for="winner in winners"
+              :key="winner.id"
+              :participant="winner"
+              :is-drawing="false"
+              :is-selected="false"
+            />
+          </div>
+        </div>
+      </div>
+
       <!-- Participants List -->
       <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
@@ -162,6 +185,7 @@ import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useParticipantsStore } from '@/stores/participants'
 import { usePrizesStore } from '@/stores/prizes'
+import ParticipantCard from '@/components/ParticipantCard.vue'
 
 const participantsStore = useParticipantsStore()
 const prizesStore = usePrizesStore()
