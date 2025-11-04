@@ -16,6 +16,22 @@
     </header>
 
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Info Banner -->
+      <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex items-start gap-3">
+          <div class="text-2xl">ℹ️</div>
+          <div class="flex-1">
+            <h4 class="font-semibold text-blue-900 mb-1">抽獎規則</h4>
+            <ul class="text-sm text-blue-800 space-y-1">
+              <li>• 獎品將按照<strong>優先順序</strong>分配（從上到下）</li>
+              <li>• 當獎品數量為1時，系統會<strong>自動切換</strong>到下一個獎品</li>
+              <li>• 每位獲獎者會顯示對應的<strong>獎品名稱</strong></li>
+              <li>• 可一次抽取多名獲獎者，每人可能獲得不同獎品</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <!-- Draw Controls -->
       <div class="card p-6 mb-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -129,13 +145,15 @@
           <h3 class="text-3xl font-bold text-gray-900 mb-6">恭喜所有獲獎者！</h3>
         </div>
         
-        <!-- Use ParticipantCard with rainbow animation -->
+        <!-- Use ParticipantCard with rainbow animation and show prize -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-          <ParticipantCard
-            v-for="winner in currentWinners"
-            :key="winner.id"
-            :participant="winner"
-          />
+          <div v-for="winner in currentWinners" :key="winner.id" class="relative">
+            <ParticipantCard :participant="winner" />
+            <!-- Prize badge -->
+            <div class="mt-2 px-3 py-1.5 bg-purple-100 border border-purple-300 rounded-lg text-center">
+              <div class="text-xs font-medium text-purple-900">🎁 {{ winner.prizeWon }}</div>
+            </div>
+          </div>
         </div>
         
         <div class="flex justify-center gap-4">
@@ -279,23 +297,55 @@ const finalizeDraw = () => {
   stopDrawing()
   clearSelection() // Clear any selected participant before showing winners
   
-  // Select multiple winners, but don't exceed available prizes
+  // Get all available prizes sorted by order (priority)
+  const availablePrizes = prizesStore.availablePrizes
+  if (availablePrizes.length === 0) {
+    alert('❌ 沒有可用獎品！')
+    return
+  }
+  
+  // Select multiple winners
   const availableParticipants = [...activeParticipants.value]
   const newWinners: Participant[] = []
-  const maxWinners = currentPrize.value ? 
-    Math.min(winnersToSelect.value, currentPrize.value.remainingQuantity, availableParticipants.length) :
-    Math.min(winnersToSelect.value, availableParticipants.length)
+  const numberOfWinners = Math.min(winnersToSelect.value, availableParticipants.length)
   
-  for (let i = 0; i < maxWinners; i++) {
+  let prizeIndex = 0
+  
+  for (let i = 0; i < numberOfWinners; i++) {
+    // Select random participant
     const randomIndex = Math.floor(Math.random() * availableParticipants.length)
     const winner = availableParticipants.splice(randomIndex, 1)[0]
     
-    if (currentPrize.value) {
+    // Find next available prize (in order of priority)
+    let assignedPrize = null
+    while (prizeIndex < availablePrizes.length) {
+      const prize = availablePrizes[prizeIndex]
+      if (prize.remainingQuantity > 0) {
+        assignedPrize = prize
+        break
+      }
+      prizeIndex++
+    }
+    
+    // If we still have prizes available, assign it
+    if (assignedPrize) {
       newWinners.push({
         ...winner,
-        prizeWon: currentPrize.value.title,
+        prizeWon: assignedPrize.title,
         isWinner: true  // Set isWinner to true for rainbow animation
       })
+      
+      // Consume the prize immediately for accurate counting
+      consumePrize(assignedPrize.id)
+      
+      // Refresh available prizes after consuming
+      if (assignedPrize.remainingQuantity - 1 <= 0) {
+        prizeIndex++ // Move to next prize if current one is exhausted
+      }
+    } else {
+      // No more prizes available
+      alert(`⚠️ 只有 ${newWinners.length} 個可用獎品！\n已抽取 ${newWinners.length} 位獲獎者。`)
+      break
     }
   }
   
@@ -303,17 +353,10 @@ const finalizeDraw = () => {
 }
 
 const confirmWinners = () => {
-  if (currentWinners.value.length > 0 && currentPrize.value) {
-    currentWinners.value.forEach((winner, index) => {
+  if (currentWinners.value.length > 0) {
+    currentWinners.value.forEach((winner) => {
       markAsWinner(winner.id, winner.prizeWon)
     })
-    
-    // Consume prizes based on number of winners
-    for (let i = 0; i < currentWinners.value.length; i++) {
-      if (currentPrize.value.remainingQuantity > 0) {
-        consumePrize(currentPrize.value.id)
-      }
-    }
     
     currentWinners.value = []
     clearSelection()
