@@ -1,18 +1,18 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="min-h-screen christmas-bg">
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
+    <header class="christmas-header">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-6">
           <div class="flex items-center">
-            <h1 class="text-3xl font-bold text-gray-900">🎯 幸運抽獎</h1>
-            <span class="ml-2 px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full">現代版</span>
+            <h1 class="text-3xl font-bold text-white drop-shadow-lg">🎄 聖誕派對抽獎系統</h1>
+            <span class="ml-2 px-2 py-1 sm font-semibold text-white bg-red-700 rounded-full shadow-lg">2025 🎅</span>
           </div>
           <nav class="flex space-x-4">
-            <router-link to="/" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md font-medium">首頁</router-link>
-            <router-link to="/draw" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md font-medium">抽獎</router-link>
-            <router-link to="/results" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md font-medium">結果</router-link>
-            <router-link to="/settings" class="text-gray-500 hover:text-gray-900 px-3 py-2 rounded-md font-medium">設定</router-link>
+            <router-link to="/" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">首頁</router-link>
+            <router-link to="/draw" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">抽獎</router-link>
+            <router-link to="/results" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">結果</router-link>
+            <router-link to="/settings" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">設定</router-link>
           </nav>
         </div>
       </div>
@@ -23,11 +23,12 @@
       <!-- Welcome Section -->
       <div class="text-center mb-12">
         <h2 class="text-4xl font-bold text-gray-900 mb-4">
-          歡迎使用現代幸運抽獎
+          🎅 歡迎參加聖誕派對抽獎 🎄
         </h2>
         <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-          一個現代化、免費的線上抽獎應用程式，完美適用於行銷贈品、
-          企業活動和慶祝活動。簡單易用、公平且令人興奮！
+          🎉 聖誕節快樂！準備好迎接聖誕驚喜了嗎？⭐<br/>
+          讓我們一起用公平、有趣的方式抽出幸運得主，<br/>
+          為這個特別的聖誕派對增添更多歡樂與期待！🎁❄️
         </p>
       </div>
 
@@ -45,6 +46,19 @@
           <div class="text-3xl font-bold text-purple-600 mb-2">{{ totalPrizes }}</div>
           <div class="text-gray-600">可用獎品</div>
         </div>
+      </div>
+
+      <!-- Quick Start: Load Sample Data -->
+      <div class="mb-8 text-center">
+        <button 
+          @click="loadSampleData"
+          class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-red-600 to-green-600 text-white font-bold rounded-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+        >
+          <span class="text-2xl mr-2">🎄</span>
+          載入聖誕派對範例數據
+          <span class="text-2xl ml-2">🎁</span>
+        </button>
+        <p class="text-sm text-gray-600 mt-2">快速載入15位參與者和6種聖誕禮物開始測試</p>
       </div>
 
       <!-- Action Cards -->
@@ -156,4 +170,56 @@ const showAddPrize = ref(false)
 
 const { totalParticipants, winners, activeParticipants } = participantsStore
 const { totalPrizes } = prizesStore
+
+// Load Christmas-themed sample data
+const loadSampleData = () => {
+  // Christmas party participants
+  const sampleParticipants = [
+    { name: '張三', position: '總經理', group: '管理層' },
+    { name: '李四', position: '專案經理', group: '管理層' },
+    { name: '王五', position: '工程師', group: '技術部' },
+    { name: '趙六', position: '設計師', group: '設計部' },
+    { name: '陳七', position: '行銷專員', group: '行銷部' },
+    { name: '林八', position: '業務經理', group: '業務部' },
+    { name: '黃九', position: '人資專員', group: '行政部' },
+    { name: '吳十', position: '財務主管', group: '財務部' },
+    { name: '周小明', position: '軟體工程師', group: '技術部' },
+    { name: '鄭小華', position: 'UI/UX設計師', group: '設計部' },
+    { name: '孫小美', position: '客服專員', group: '客服部' },
+    { name: '錢大福', position: '倉管人員', group: '物流部' },
+    { name: '楊小玉', position: '會計', group: '財務部' },
+    { name: '劉大明', position: '系統管理員', group: '技術部' },
+    { name: '蔡小芬', position: '秘書', group: '行政部' }
+  ]
+  
+  sampleParticipants.forEach((p) => {
+    participantsStore.addParticipant({
+      name: p.name,
+      position: p.position,
+      group: p.group
+    })
+  })
+  
+  // Christmas gifts
+  const samplePrizes = [
+    { title: '🎁 特等獎 - iPhone 15 Pro', description: '最新款 iPhone 15 Pro 256GB', quantity: 1 },
+    { title: '🎄 一等獎 - AirPods Pro', description: 'Apple AirPods Pro 第二代', quantity: 2 },
+    { title: '⭐ 二等獎 - iPad', description: 'iPad 10.9吋 Wi-Fi 64GB', quantity: 3 },
+    { title: '🎅 三等獎 - Apple Watch', description: 'Apple Watch SE', quantity: 5 },
+    { title: '❄️ 四等獎 - 禮品卡', description: '購物禮品卡 NT$3,000', quantity: 10 },
+    { title: '🌟 參加獎 - 聖誕禮盒', description: '精美聖誕禮物組合', quantity: 20 }
+  ]
+  
+  samplePrizes.forEach((p, index) => {
+    prizesStore.addPrize({
+      title: p.title,
+      description: p.description,
+      quantity: p.quantity,
+      remainingQuantity: p.quantity,
+      order: index + 1
+    })
+  })
+  
+  alert('✅ 已載入聖誕派對範例數據！\n👥 15位參與者\n🎁 6種聖誕禮物')
+}
 </script>

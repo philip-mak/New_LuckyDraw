@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100">
+  <div class="min-h-screen christmas-bg">
     <!-- Header -->
     <header class="bg-white shadow-sm border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,6 +162,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useParticipantsStore } from '@/stores/participants'
 import { usePrizesStore } from '@/stores/prizes'
 import { useSettingsStore } from '@/stores/settings'
@@ -176,10 +177,15 @@ const currentWinners = ref<Participant[]>([])
 const winnersToSelect = ref(1)
 const selectedWinners = ref<Participant[]>([])
 
+// Use storeToRefs to maintain reactivity!
 const { 
   activeParticipants, 
   winners, 
-  selectedParticipant,
+  selectedParticipant
+} = storeToRefs(participantsStore)
+
+// Get methods directly from store (these don't need refs)
+const {
   selectParticipant,
   markAsWinner,
   clearSelection,
@@ -204,14 +210,14 @@ const currentPrize = computed(() => getNextAvailablePrize())
 
 // Calculate available winner count options
 const availableWinnerCounts = computed(() => {
-  const maxWinners = Math.min(activeParticipants.length, 20) // Cap at 20 for UI reasons
+  const maxWinners = Math.min(activeParticipants.value.length, 20) // Cap at 20 for UI reasons
   return Array.from({ length: maxWinners }, (_, i) => i + 1)
 })
 
 let drawInterval: number | null = null
 
 const startDraw = () => {
-  if (activeParticipants.length === 0 || winnersToSelect.value === 0) return
+  if (activeParticipants.value.length === 0 || winnersToSelect.value === 0) return
   
   startDrawing()
   currentWinners.value = []
@@ -229,8 +235,11 @@ const startDraw = () => {
     
     // Randomly select participants during animation
     if (progress < 90) {
-      const randomIndex = Math.floor(Math.random() * activeParticipants.length)
-      const randomParticipant = activeParticipants[randomIndex]
+      // Clear previous selection first to ensure only one card animates
+      clearSelection()
+      
+      const randomIndex = Math.floor(Math.random() * activeParticipants.value.length)
+      const randomParticipant = activeParticipants.value[randomIndex]
       selectParticipant(randomParticipant.id)
     }
     
@@ -257,9 +266,10 @@ const finalizeDraw = () => {
   }
   
   stopDrawing()
+  clearSelection() // Clear any selected participant before showing winners
   
   // Select multiple winners, but don't exceed available prizes
-  const availableParticipants = [...activeParticipants]
+  const availableParticipants = [...activeParticipants.value]
   const newWinners: Participant[] = []
   const maxWinners = currentPrize.value ? 
     Math.min(winnersToSelect.value, currentPrize.value.remainingQuantity, availableParticipants.length) :
@@ -301,7 +311,7 @@ const confirmWinners = () => {
 const redraw = () => {
   currentWinners.value = []
   clearSelection()
-  if (activeParticipants.length > 0) {
+  if (activeParticipants.value.length > 0) {
     setTimeout(() => startDraw(), 500)
   }
 }
@@ -317,7 +327,7 @@ const resetDraw = () => {
 
 // Watch for changes in active participants and adjust winner selection
 watch(
-  () => activeParticipants.length,
+  () => activeParticipants.value.length,
   (newCount) => {
     if (winnersToSelect.value > newCount) {
       winnersToSelect.value = Math.max(1, newCount)
@@ -332,7 +342,7 @@ onMounted(() => {
   }
   
   // Set initial winner count
-  if (activeParticipants.length > 0) {
+  if (activeParticipants.value.length > 0) {
     winnersToSelect.value = 1
   }
 })

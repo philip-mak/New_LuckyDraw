@@ -4,7 +4,7 @@ import type { DrawSettings } from '@/types'
 
 export const useSettingsStore = defineStore('settings', () => {
   const settings = ref<DrawSettings>({
-    animationDuration: 3000,
+    animationDuration: 3000, // 3 seconds - much faster
     showParticipantInfo: true,
     enableSounds: true,
     allowDuplicateWinners: false,
