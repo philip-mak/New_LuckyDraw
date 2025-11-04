@@ -317,56 +317,36 @@ const finalizeDraw = () => {
   stopDrawing()
   clearSelection() // Clear any selected participant before showing winners
   
-  // Get all available prizes sorted by order (priority)
-  const availablePrizes = prizesStore.availablePrizes
-  if (availablePrizes.length === 0) {
-    alert('❌ 沒有可用獎品！')
-    return
-  }
-  
   // Select multiple winners
   const availableParticipants = [...activeParticipants.value]
   const newWinners: Participant[] = []
   const numberOfWinners = Math.min(winnersToSelect.value, availableParticipants.length)
   
-  let prizeIndex = 0
-  
   for (let i = 0; i < numberOfWinners; i++) {
+    // Get fresh list of available prizes (sorted by order)
+    const availablePrizes = prizesStore.availablePrizes
+    
+    if (availablePrizes.length === 0) {
+      alert(`⚠️ 只有 ${newWinners.length} 個可用獎品！\n已抽取 ${newWinners.length} 位獲獎者。`)
+      break
+    }
+    
+    // Get the first available prize (highest priority)
+    const assignedPrize = availablePrizes[0]
+    
     // Select random participant
     const randomIndex = Math.floor(Math.random() * availableParticipants.length)
     const winner = availableParticipants.splice(randomIndex, 1)[0]
     
-    // Find next available prize (in order of priority)
-    let assignedPrize = null
-    while (prizeIndex < availablePrizes.length) {
-      const prize = availablePrizes[prizeIndex]
-      if (prize.remainingQuantity > 0) {
-        assignedPrize = prize
-        break
-      }
-      prizeIndex++
-    }
+    // Assign prize to winner
+    newWinners.push({
+      ...winner,
+      prizeWon: assignedPrize.title,
+      isWinner: true  // Set isWinner to true for rainbow animation
+    })
     
-    // If we still have prizes available, assign it
-    if (assignedPrize) {
-      newWinners.push({
-        ...winner,
-        prizeWon: assignedPrize.title,
-        isWinner: true  // Set isWinner to true for rainbow animation
-      })
-      
-      // Consume the prize immediately for accurate counting
-      consumePrize(assignedPrize.id)
-      
-      // Refresh available prizes after consuming
-      if (assignedPrize.remainingQuantity - 1 <= 0) {
-        prizeIndex++ // Move to next prize if current one is exhausted
-      }
-    } else {
-      // No more prizes available
-      alert(`⚠️ 只有 ${newWinners.length} 個可用獎品！\n已抽取 ${newWinners.length} 位獲獎者。`)
-      break
-    }
+    // Consume the prize immediately (this updates the store)
+    consumePrize(assignedPrize.id)
   }
   
   currentWinners.value = newWinners
