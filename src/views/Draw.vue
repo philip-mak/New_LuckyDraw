@@ -4,7 +4,12 @@
     <header class="bg-white shadow-sm border-b border-gray-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center py-4">
-          <h1 class="text-2xl font-bold text-gray-900">🎯 幸運抽獎</h1>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">🎯 幸運抽獎</h1>
+            <p v-if="activeSession" class="text-sm text-gray-600 mt-1">
+              場次: <span class="font-medium" :style="{ color: activeSession.color }">{{ activeSession.name }}</span>
+            </p>
+          </div>
           <router-link to="/" class="btn-secondary">← 返回首頁</router-link>
         </div>
       </div>
@@ -167,13 +172,17 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useParticipantsStore } from '@/stores/participants'
 import { usePrizesStore } from '@/stores/prizes'
+import { useSessionsStore } from '@/stores/sessions'
 import { useSettingsStore } from '@/stores/settings'
 import ParticipantCard from '@/components/ParticipantCard.vue'
 import type { Participant } from '@/types'
 
 const participantsStore = useParticipantsStore()
 const prizesStore = usePrizesStore()
+const sessionsStore = useSessionsStore()
 const settingsStore = useSettingsStore()
+
+const activeSession = computed(() => sessionsStore.activeSession)
 
 const currentWinners = ref<Participant[]>([])
 const winnersToSelect = ref(1)
