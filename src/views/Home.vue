@@ -220,6 +220,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useParticipantsStore } from '@/stores/participants'
 import { usePrizesStore } from '@/stores/prizes'
 import { useSessionsStore } from '@/stores/sessions'
@@ -233,8 +234,9 @@ const sessionsStore = useSessionsStore()
 const showAddParticipant = ref(false)
 const showAddPrize = ref(false)
 
-const { totalParticipants, winners, activeParticipants } = participantsStore
-const { totalPrizes } = prizesStore
+// Use storeToRefs to maintain reactivity
+const { totalParticipants, winners, activeParticipants } = storeToRefs(participantsStore)
+const { totalPrizes } = storeToRefs(prizesStore)
 
 // Load Christmas-themed sample data
 const loadSampleData = () => {
@@ -371,9 +373,9 @@ const confirmClearAll = () => {
     `⚠️ 確定要清除當前場次的所有資料嗎？\n\n` +
     `場次: ${sessionsStore.activeSession.name}\n\n` +
     '這將刪除:\n' +
-    `👥 ${totalParticipants} 位參與者\n` +
-    `🎁 ${totalPrizes} 個獎品\n` +
-    `🏆 ${winners.length} 位獲獎者\n\n` +
+    `👥 ${totalParticipants.value} 位參與者\n` +
+    `🎁 ${totalPrizes.value} 個獎品\n` +
+    `🏆 ${winners.value.length} 位獲獎者\n\n` +
     '💡 建議先匯出資料備份！\n此操作無法復原。'
   )
 
