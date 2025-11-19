@@ -357,7 +357,7 @@ const confirmWinners = () => {
     currentWinners.value.forEach((winner) => {
       markAsWinner(winner.id, winner.prizeWon)
     })
-    
+     
     currentWinners.value = []
     clearSelection()
   }
