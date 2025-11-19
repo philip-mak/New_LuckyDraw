@@ -44,8 +44,9 @@
           <div class="text-gray-600">已選中獲獎者</div>
         </div>
         <div class="card p-6 text-center">
-          <div class="text-3xl font-bold text-purple-600 mb-2">{{ totalPrizes }}</div>
+          <div class="text-3xl font-bold text-purple-600 mb-2">{{ totalRemainingPrizes }}</div>
           <div class="text-gray-600">可用獎品</div>
+          <div class="text-xs text-gray-500 mt-1">{{ totalPrizes }} 種獎品</div>
         </div>
       </div>
 
@@ -236,7 +237,12 @@ const showAddPrize = ref(false)
 
 // Use storeToRefs to maintain reactivity
 const { totalParticipants, winners, activeParticipants } = storeToRefs(participantsStore)
-const { totalPrizes } = storeToRefs(prizesStore)
+const { totalPrizes, prizes } = storeToRefs(prizesStore)
+
+// Calculate total remaining prize quantity
+const totalRemainingPrizes = computed(() => {
+  return prizes.value.reduce((sum, prize) => sum + prize.remainingQuantity, 0)
+})
 
 // Load Christmas-themed sample data
 const loadSampleData = () => {
