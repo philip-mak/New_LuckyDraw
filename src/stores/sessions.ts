@@ -34,7 +34,7 @@ export const useSessionsStore = defineStore('sessions', () => {
       name: s.name,
       color: s.color,
       participantsCount: s.participants.length,
-      winnersCount: s.winners.length,
+      winnersCount: s.participants.filter(p => p.isWinner).length,
       prizesCount: s.prizes.reduce((sum, p) => sum + p.quantity, 0),
       prizesRemaining: s.prizes.reduce((sum, p) => sum + p.remainingQuantity, 0),
       progress: s.prizes.reduce((sum, p) => sum + p.quantity, 0) > 0
