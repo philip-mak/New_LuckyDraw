@@ -219,61 +219,107 @@ const handleCSVUpload = (event: Event) => {
 }
 
 const importPrizesFromCSV = (csvData: string) => {
-  try {
-    const lines = csvData.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
+  // Remove BOM if present and trim
+  const cleaned = csvData.replace(/^\uFEFF/, '').trim()
+  if (!cleaned) {
+    alert('❌ CSV 檔案是空的！')
+    return
+  }
+
+  // Split into lines (handle both \n and \r\n)
+  const lines = cleaned.split(/\r?\n/).filter(line => line.trim())
+  if (lines.length < 2) {
+    alert('❌ CSV 檔案至少需要標題列和一筆資料！')
+    return
+  }
+
+  // Parse CSV row (handle quoted fields with commas)
+  const parseCSVRow = (row: string): string[] => {
+    const result: string[] = []
+    let current = ''
+    let inQuotes = false
     
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
-      const prize = {
-        title: '',
-        description: '',
-        quantity: 1,
-        remainingQuantity: 1,
-        order: prizesStore.totalPrizes + i
-      }
+    for (let i = 0; i < row.length; i++) {
+      const char = row[i]
+      const nextChar = row[i + 1]
       
-      headers.forEach((header, index) => {
-        if (values[index]) {
-          switch (header) {
-            case '獎品名稱':
-            case 'title':
-            case 'name':
-              prize.title = values[index]
-              break
-            case '描述':
-            case 'description':
-            case 'desc':
-              prize.description = values[index]
-              break
-            case '數量':
-            case 'quantity':
-            case 'qty':
-              const qty = parseInt(values[index])
-              if (!isNaN(qty) && qty > 0) {
-                prize.quantity = qty
-                prize.remainingQuantity = qty
-              }
-              break
-            case '順序':
-            case 'order':
-              const order = parseInt(values[index])
-              if (!isNaN(order) && order > 0) {
-                prize.order = order
-              }
-              break
-          }
+      if (char === '"') {
+        if (inQuotes && nextChar === '"') {
+          current += '"'
+          i++
+        } else {
+          inQuotes = !inQuotes
         }
-      })
-      
-      if (prize.title) {
-        prizesStore.addPrize(prize)
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim())
+        current = ''
+      } else {
+        current += char
       }
     }
+    result.push(current.trim())
+    return result
+  }
+
+  const headerRow = parseCSVRow(lines[0])
+  
+  // Map headers (support both Chinese and English)
+  const headerMap: { [key: string]: number } = {}
+  headerRow.forEach((header, index) => {
+    const normalized = header.trim().toLowerCase()
+    if (normalized === 'title' || normalized === 'name' || normalized === '獎品名稱' || normalized === '奖品名称' || normalized === '名稱' || normalized === '名称') {
+      headerMap.title = index
+    } else if (normalized === 'description' || normalized === 'desc' || normalized === '描述') {
+      headerMap.description = index
+    } else if (normalized === 'quantity' || normalized === 'qty' || normalized === '數量' || normalized === '数量') {
+      headerMap.quantity = index
+    } else if (normalized === 'order' || normalized === '順序' || normalized === '顺序') {
+      headerMap.order = index
+    }
+  })
+
+  // Check if title column exists
+  if (headerMap.title === undefined) {
+    alert('❌ 找不到「獎品名稱」欄位！\n\n請確認 CSV 檔案包含以下任一標題:\n• 獎品名稱\n• title\n• name')
+    return
+  }
+
+  const newPrizes: any[] = []
+  const startOrder = prizesStore.totalPrizes + 1
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVRow(lines[i])
     
-    alert('獎品 CSV 匯入成功！')
-  } catch (error) {
-    alert('匯入獎品時發生錯誤，請檢查 CSV 檔案格式。')
+    // Skip empty lines
+    if (!values.some(v => v.trim())) continue
+    
+    const title = values[headerMap.title]?.trim() || ''
+    if (!title) continue
+
+    const quantity = headerMap.quantity !== undefined 
+      ? parseInt(values[headerMap.quantity] || '1') || 1
+      : 1
+
+    const order = headerMap.order !== undefined
+      ? parseInt(values[headerMap.order] || String(startOrder + i - 1)) || (startOrder + i - 1)
+      : (startOrder + i - 1)
+
+    const prize = {
+      title,
+      description: headerMap.description !== undefined ? values[headerMap.description]?.trim() || '' : '',
+      quantity,
+      remainingQuantity: quantity,
+      order
+    }
+    
+    newPrizes.push(prize)
+  }
+
+  if (newPrizes.length > 0) {
+    newPrizes.forEach(prize => prizesStore.addPrize(prize))
+    alert(`✅ 成功匯入 ${newPrizes.length} 項獎品！`)
+  } else {
+    alert('❌ 未找到有效的獎品資料！\n請確認 CSV 格式正確。')
   }
 }
 </script>
