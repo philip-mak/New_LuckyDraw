@@ -270,6 +270,12 @@ let drawInterval: number | null = null
 const startDraw = () => {
   if (activeParticipants.value.length === 0 || winnersToSelect.value === 0) return
   
+  // Check if there are any available prizes before starting
+  if (availablePrizes.value.length === 0) {
+    alert('❌ 沒有可用的獎品！\n請先新增獎品或重設獎品數量。')
+    return
+  }
+  
   startDrawing()
   currentWinners.value = []
   selectedWinners.value = []
@@ -327,15 +333,28 @@ const finalizeDraw = () => {
   
   for (let i = 0; i < numberOfWinners; i++) {
     // Get fresh list of available prizes (sorted by order)
-    const availablePrizes = prizesStore.availablePrizes
+    const availablePrizesList = prizesStore.availablePrizes
     
-    if (availablePrizes.length === 0) {
-      alert(`⚠️ 只有 ${newWinners.length} 個可用獎品！\n已抽取 ${newWinners.length} 位獲獎者。`)
+    if (availablePrizesList.length === 0) {
+      // Return all prizes consumed so far in this draw
+      currentDrawPrizeIds.value.forEach(prizeId => {
+        returnPrize(prizeId)
+      })
+      currentDrawPrizeIds.value = []
+      
+      // Show alert only once with the correct count
+      if (newWinners.length > 0) {
+        alert(`⚠️ 只有 ${newWinners.length} 個可用獎品！\n已抽取 ${newWinners.length} 位獲獎者。`)
+      } else {
+        alert('❌ 沒有可用的獎品！\n請先新增獎品或重設獎品數量。')
+        currentWinners.value = []
+        return
+      }
       break
     }
     
     // Get the first available prize (highest priority)
-    const assignedPrize = availablePrizes[0]
+    const assignedPrize = availablePrizesList[0]
     
     // Select random participant
     const randomIndex = Math.floor(Math.random() * availableParticipants.length)
