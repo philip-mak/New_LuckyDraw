@@ -407,7 +407,9 @@ const resetDraw = () => {
     resetAllWinners()
     prizesStore.resetAllPrizes()
     currentWinners.value = []
+    currentDrawPrizeIds.value = []
     clearSelection()
+    alert('✅ 已成功重設所有獲獎者和獎品數量！')
   }
 }
 
