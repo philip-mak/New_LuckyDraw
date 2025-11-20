@@ -46,7 +46,7 @@
         <div class="card p-6 text-center">
           <div class="text-3xl font-bold text-purple-600 mb-2">{{ totalRemainingPrizes }}</div>
           <div class="text-gray-600">可用獎品</div>
-          <div class="text-xs text-gray-500 mt-1">{{ totalPrizes }} 種獎品</div>
+          <div class="text-xs text-gray-500 mt-1">總共 {{ totalPrizeQuantity }} 個獎品</div>
         </div>
       </div>
 
@@ -238,6 +238,11 @@ const showAddPrize = ref(false)
 // Use storeToRefs to maintain reactivity
 const { totalParticipants, winners, activeParticipants } = storeToRefs(participantsStore)
 const { totalPrizes, prizes } = storeToRefs(prizesStore)
+
+// Calculate total prize quantity (not remaining, but total available)
+const totalPrizeQuantity = computed(() => {
+  return prizes.value.reduce((sum, prize) => sum + prize.quantity, 0)
+})
 
 // Calculate total remaining prize quantity
 const totalRemainingPrizes = computed(() => {
