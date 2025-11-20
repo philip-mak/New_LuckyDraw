@@ -220,6 +220,7 @@ const activeSession = computed(() => sessionsStore.activeSession)
 const currentWinners = ref<Participant[]>([])
 const winnersToSelect = ref(1)
 const selectedWinners = ref<Participant[]>([])
+const currentDrawPrizeIds = ref<string[]>([]) // Track prizes consumed in current draw
 
 // Use storeToRefs to maintain reactivity!
 const { 
@@ -243,7 +244,8 @@ const {
 
 const { 
   getNextAvailablePrize, 
-  consumePrize 
+  consumePrize,
+  returnPrize
 } = prizesStore
 
 const { 
@@ -271,6 +273,7 @@ const startDraw = () => {
   startDrawing()
   currentWinners.value = []
   selectedWinners.value = []
+  currentDrawPrizeIds.value = [] // Reset prize tracking
   clearSelection()
   
   let progress = 0
@@ -347,6 +350,8 @@ const finalizeDraw = () => {
     
     // Consume the prize immediately (this updates the store)
     consumePrize(assignedPrize.id)
+    // Track this prize so we can return it if redrawing
+    currentDrawPrizeIds.value.push(assignedPrize.id)
   }
   
   currentWinners.value = newWinners
@@ -357,14 +362,21 @@ const confirmWinners = () => {
     currentWinners.value.forEach((winner) => {
       markAsWinner(winner.id, winner.prizeWon)
     })
-     
+     
     currentWinners.value = []
+    currentDrawPrizeIds.value = [] // Clear prize tracking after confirmation
     clearSelection()
   }
 }
 
 const redraw = () => {
+  // Return all prizes consumed in this draw
+  currentDrawPrizeIds.value.forEach(prizeId => {
+    returnPrize(prizeId)
+  })
+  
   currentWinners.value = []
+  currentDrawPrizeIds.value = []
   clearSelection()
   if (activeParticipants.value.length > 0) {
     setTimeout(() => startDraw(), 500)

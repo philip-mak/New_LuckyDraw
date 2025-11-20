@@ -12,7 +12,9 @@ export const usePrizesStore = defineStore('prizes', () => {
   })
 
   const availablePrizes = computed(() =>
-    prizes.value.filter(p => p.remainingQuantity > 0)
+    prizes.value
+      .filter(p => p.remainingQuantity > 0)
+      .sort((a, b) => a.order - b.order)
   )
 
   const totalPrizes = computed(() => prizes.value.length)
@@ -86,6 +88,23 @@ export const usePrizesStore = defineStore('prizes', () => {
     return true
   }
 
+  const returnPrize = (id: string) => {
+    if (!sessionsStore.activeSession) return false
+    
+    const prize = prizes.value.find(p => p.id === id)
+    if (!prize) return false
+    
+    // Don't return more than the original quantity
+    if (prize.remainingQuantity >= prize.quantity) return false
+    
+    const updated = prizes.value.map(p =>
+      p.id === id ? { ...p, remainingQuantity: p.remainingQuantity + 1 } : p
+    )
+    
+    sessionsStore.updateSessionData({ prizes: updated })
+    return true
+  }
+
   const resetAllPrizes = () => {
     if (!sessionsStore.activeSession) return
     
@@ -117,6 +136,7 @@ export const usePrizesStore = defineStore('prizes', () => {
     removePrize,
     updatePrize,
     consumePrize,
+    returnPrize,
     resetAllPrizes,
     clearAllPrizes,
     getNextAvailablePrize
