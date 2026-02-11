@@ -6,7 +6,7 @@
         <div class="flex justify-between items-center py-6">
           <div class="flex items-center">
             <h1 class="text-3xl font-bold text-white drop-shadow-lg">晚宴抽獎系統</h1>
-            <span class="ml-2 px-2 py-1 sm font-semibold text-white bg-red-700 rounded-full shadow-lg">2025</span>
+            <span class="ml-2 px-2 py-1 sm font-semibold text-white bg-red-700 rounded-full shadow-lg">2026</span>
           </div>
           <nav class="flex space-x-4">
             <router-link to="/" class="text-white hover:text-yellow-300 transition-colors px-3 py-2 rounded-md font-medium">首頁</router-link>
