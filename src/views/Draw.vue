@@ -32,6 +32,39 @@
         </div>
       </div>
 
+      <!-- Available Prizes Queue -->
+      <div v-if="availablePrizes.length > 0" class="card p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">📋 待抽獎品清單（按優先順序）</h3>
+        <div class="space-y-3">
+          <div 
+            v-for="(prize, index) in availablePrizes.slice(0, 5)" 
+            :key="prize.id"
+            class="flex items-center justify-between p-4 rounded-lg border-2 transition-all"
+            :class="index === 0 ? 'bg-purple-50 border-purple-300' : 'bg-gray-50 border-gray-200'"
+          >
+            <div class="flex items-center gap-3">
+              <div 
+                class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                :class="index === 0 ? 'bg-purple-600' : 'bg-gray-400'"
+              >
+                {{ index + 1 }}
+              </div>
+              <div>
+                <div class="font-semibold text-gray-900">{{ prize.title }}</div>
+                <div class="text-sm text-gray-600">{{ prize.description }}</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-purple-600">{{ prize.remainingQuantity }}</div>
+              <div class="text-xs text-gray-500">剩餘數量</div>
+            </div>
+          </div>
+        </div>
+        <div v-if="availablePrizes.length > 5" class="text-center text-sm text-gray-500 mt-3">
+          還有 {{ availablePrizes.length - 5 }} 項獎品...
+        </div>
+      </div>
+
       <!-- Draw Controls -->
       <div class="card p-6 mb-8">
         <div class="flex flex-col md:flex-row justify-between items-center gap-4">
@@ -97,39 +130,6 @@
           <p class="text-center text-sm text-gray-600 mt-2">
             正在抽取 {{ winnersToSelect }} 名獲獎者...
           </p>
-        </div>
-      </div>
-
-      <!-- Available Prizes Queue -->
-      <div v-if="availablePrizes.length > 0" class="card p-6 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4 text-center">📋 待抽獎品清單（按優先順序）</h3>
-        <div class="space-y-3">
-          <div 
-            v-for="(prize, index) in availablePrizes.slice(0, 5)" 
-            :key="prize.id"
-            class="flex items-center justify-between p-4 rounded-lg border-2 transition-all"
-            :class="index === 0 ? 'bg-purple-50 border-purple-300' : 'bg-gray-50 border-gray-200'"
-          >
-            <div class="flex items-center gap-3">
-              <div 
-                class="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                :class="index === 0 ? 'bg-purple-600' : 'bg-gray-400'"
-              >
-                {{ index + 1 }}
-              </div>
-              <div>
-                <div class="font-semibold text-gray-900">{{ prize.title }}</div>
-                <div class="text-sm text-gray-600">{{ prize.description }}</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-lg font-bold text-purple-600">{{ prize.remainingQuantity }}</div>
-              <div class="text-xs text-gray-500">剩餘數量</div>
-            </div>
-          </div>
-        </div>
-        <div v-if="availablePrizes.length > 5" class="text-center text-sm text-gray-500 mt-3">
-          還有 {{ availablePrizes.length - 5 }} 項獎品...
         </div>
       </div>
 

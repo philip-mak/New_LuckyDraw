@@ -33,6 +33,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
+          # Project site: https://philip-mak.github.io/New_LuckyDraw/
           VITE_BASE_PATH: '/New_LuckyDraw/'
 
       - name: Upload artifact

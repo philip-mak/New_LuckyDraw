@@ -22,7 +22,7 @@
   }
   
   .card {
-    @apply bg-white rounded-lg shadow-md border border-gray-200;
+    @apply bg-amber-200 rounded-lg shadow-md border border-gray-200;
   }
   
   /* Christmas Theme Styles */
@@ -33,7 +33,7 @@
   }
   
   .christmas-bg {
-    background: linear-gradient(135deg, #fef2f2 0%, #f0fdf4 25%, #fef2f2 50%, #f0fdf4 75%, #fef2f2 100%);
+    background: #dc2626;
     background-size: 400% 400%;
     animation: christmasGradient 15s ease infinite;
   }
